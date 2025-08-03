@@ -5,13 +5,13 @@ const copyCodeToClipboard = async (code: string) => {
   try {
     await navigator.clipboard.writeText(code);
   } catch (err) {
-    console.warn('Failed to copy code to clipboard:', err);
+    console.warn("Failed to copy code to clipboard:", err);
   }
 };
 
 // Format markdown-like text to JSX elements
 export const formatResponse = (
-  text: string, 
+  text: string,
   onViewArtifact?: (snippetIndex: number) => void
 ): React.ReactNode => {
   if (!text) return null;
@@ -24,21 +24,25 @@ export const formatResponse = (
   let codeContent: string[] = [];
   let codeLanguage = "";
   let snippetIndex = 0;
+  console.log("Formatting response text:", text);
 
   lines.forEach((line, index) => {
+    console.log(`Processing line ${index + 1}:`, line);
     // Handle code blocks
     if (line.startsWith("```")) {
       if (!inCodeBlock) {
         inCodeBlock = true;
         codeLanguage = line.replace("```", "").trim();
+        console.log(codeLanguage);
         codeContent = [];
       } else {
         inCodeBlock = false;
-        
+
+        console.log("Ending code block:", codeLanguage, codeContent);
         // Create code snippet if we have content
         if (codeContent.length > 0) {
           const currentSnippetIndex = snippetIndex++;
-          
+
           if (onViewArtifact) {
             // Show "View Artifacts" button placeholder
             elements.push(
@@ -48,15 +52,30 @@ export const formatResponse = (
               >
                 <div className="p-4 text-center">
                   <div className="text-sm text-gray-600 mb-3">
-                    <span className="font-medium">{codeLanguage || "Code"}</span>
-                    <span className="text-gray-400"> • {codeContent.length} lines</span>
+                    <span className="font-medium">
+                      {codeLanguage || "Code"}
+                    </span>
+                    <span className="text-gray-400">
+                      {" "}
+                      • {codeContent.length} lines
+                    </span>
                   </div>
                   <button
                     onClick={() => onViewArtifact(currentSnippetIndex)}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
                   >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    <svg
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                      />
                     </svg>
                     View Artifacts
                   </button>
@@ -71,7 +90,9 @@ export const formatResponse = (
                 className="my-4 border border-gray-200 rounded-lg overflow-hidden"
               >
                 <div className="bg-gray-100 px-4 py-2 flex justify-between items-center text-sm">
-                  <span className="text-gray-600">{codeLanguage || "text"}</span>
+                  <span className="text-gray-600">
+                    {codeLanguage || "text"}
+                  </span>
                   <button
                     onClick={() => copyCodeToClipboard(codeContent.join("\n"))}
                     className="text-gray-500 hover:text-gray-700"

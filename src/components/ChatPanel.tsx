@@ -127,7 +127,7 @@ function ChatPanel({
 
             // Extract code snippets from accumulated content
             const codeSnippets = extractCodeSnippets(accumulatedContent);
-            
+
             // Update the message content in real-time
             actions.updateMessage(chatId, assistantMessageId, {
               content: accumulatedContent,
@@ -184,9 +184,11 @@ function ChatPanel({
   return (
     <div className="flex-1 flex flex-col h-full bg-gray-50">
       <div className="flex-1 flex flex-col min-h-0">
-        <ChatDisplay 
-          messages={messages} 
-          onViewArtifact={(message, snippetIndex) => onMessageSelect?.(message, snippetIndex)}
+        <ChatDisplay
+          messages={messages}
+          onViewArtifact={(message, snippetIndex) =>
+            onMessageSelect?.(message, snippetIndex)
+          }
         />
         <ChatInput
           onSendMessage={handleSendMessage}

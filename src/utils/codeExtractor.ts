@@ -6,11 +6,12 @@ import type { CodeSnippet } from "../context/ChatContext";
  * @returns Array of extracted code snippets
  */
 export function extractCodeSnippets(text: string): CodeSnippet[] {
+  console.log("Extracting code snippets from text:", text);
   if (!text) return [];
 
   const lines = text.split("\n");
   const codeSnippets: CodeSnippet[] = [];
-  
+
   let inCodeBlock = false;
   let codeContent: string[] = [];
   let codeLanguage = "";
@@ -29,7 +30,7 @@ export function extractCodeSnippets(text: string): CodeSnippet[] {
       } else {
         // Ending a code block
         inCodeBlock = false;
-        
+
         // Create code snippet if we have content
         if (codeContent.length > 0) {
           const snippet: CodeSnippet = {
@@ -41,7 +42,7 @@ export function extractCodeSnippets(text: string): CodeSnippet[] {
           };
           codeSnippets.push(snippet);
         }
-        
+
         // Reset for next code block
         codeContent = [];
         codeLanguage = "";
@@ -65,87 +66,87 @@ export function extractCodeSnippets(text: string): CodeSnippet[] {
  */
 export function normalizeLanguage(language: string): string {
   if (!language) return "text";
-  
+
   const lang = language.toLowerCase().trim();
-  
+
   // Language mappings for Monaco Editor
   const languageMap: Record<string, string> = {
     // JavaScript variants
-    "js": "javascript",
-    "jsx": "javascript",
-    "node": "javascript",
-    "nodejs": "javascript",
-    
+    js: "javascript",
+    jsx: "javascript",
+    node: "javascript",
+    nodejs: "javascript",
+
     // TypeScript variants
-    "ts": "typescript",
-    "tsx": "typescript",
-    
+    ts: "typescript",
+    tsx: "typescript",
+
     // Python variants
-    "py": "python",
-    "python3": "python",
-    
+    py: "python",
+    python3: "python",
+
     // Web technologies
-    "html": "html",
-    "htm": "html",
-    "css": "css",
-    "scss": "scss",
-    "sass": "sass",
-    "less": "less",
-    
+    html: "html",
+    htm: "html",
+    css: "css",
+    scss: "scss",
+    sass: "sass",
+    less: "less",
+
     // Shell/Bash
-    "sh": "shell",
-    "bash": "shell",
-    "zsh": "shell",
-    "fish": "shell",
-    
+    sh: "shell",
+    bash: "shell",
+    zsh: "shell",
+    fish: "shell",
+
     // Database
-    "sql": "sql",
-    "mysql": "sql",
-    "postgresql": "sql",
-    "postgres": "sql",
-    
+    sql: "sql",
+    mysql: "sql",
+    postgresql: "sql",
+    postgres: "sql",
+
     // Configuration
-    "json": "json",
-    "yaml": "yaml",
-    "yml": "yaml",
-    "xml": "xml",
-    "toml": "toml",
-    
+    json: "json",
+    yaml: "yaml",
+    yml: "yaml",
+    xml: "xml",
+    toml: "toml",
+
     // Other languages
-    "java": "java",
-    "cpp": "cpp",
+    java: "java",
+    cpp: "cpp",
     "c++": "cpp",
-    "c": "c",
-    "cs": "csharp",
-    "csharp": "csharp",
-    "php": "php",
-    "ruby": "ruby",
-    "rb": "ruby",
-    "go": "go",
-    "rust": "rust",
-    "rs": "rust",
-    "swift": "swift",
-    "kotlin": "kotlin",
-    "kt": "kotlin",
-    "scala": "scala",
-    "r": "r",
-    "matlab": "matlab",
-    "perl": "perl",
-    "lua": "lua",
-    "dart": "dart",
-    
+    c: "c",
+    cs: "csharp",
+    csharp: "csharp",
+    php: "php",
+    ruby: "ruby",
+    rb: "ruby",
+    go: "go",
+    rust: "rust",
+    rs: "rust",
+    swift: "swift",
+    kotlin: "kotlin",
+    kt: "kotlin",
+    scala: "scala",
+    r: "r",
+    matlab: "matlab",
+    perl: "perl",
+    lua: "lua",
+    dart: "dart",
+
     // Markup/Documentation
-    "markdown": "markdown",
-    "md": "markdown",
-    "tex": "latex",
-    "latex": "latex",
-    
+    markdown: "markdown",
+    md: "markdown",
+    tex: "latex",
+    latex: "latex",
+
     // Build/Config files
-    "dockerfile": "dockerfile",
-    "makefile": "makefile",
-    "make": "makefile",
+    dockerfile: "dockerfile",
+    makefile: "makefile",
+    make: "makefile",
   };
-  
+
   return languageMap[lang] || lang || "text";
 }
 
@@ -168,15 +169,20 @@ export function getCodeSnippetsSummary(codeSnippets: CodeSnippet[]): string {
   if (!codeSnippets || codeSnippets.length === 0) {
     return "No code snippets";
   }
-  
+
   if (codeSnippets.length === 1) {
     const snippet = codeSnippets[0];
     const lines = snippet.content.split("\n").length;
     return `1 ${snippet.language} snippet (${lines} lines)`;
   }
-  
-  const languages = [...new Set(codeSnippets.map(s => s.language))];
-  const totalLines = codeSnippets.reduce((sum, s) => sum + s.content.split("\n").length, 0);
-  
-  return `${codeSnippets.length} snippets (${languages.join(", ")}) - ${totalLines} lines total`;
+
+  const languages = [...new Set(codeSnippets.map((s) => s.language))];
+  const totalLines = codeSnippets.reduce(
+    (sum, s) => sum + s.content.split("\n").length,
+    0
+  );
+
+  return `${codeSnippets.length} snippets (${languages.join(
+    ", "
+  )}) - ${totalLines} lines total`;
 }

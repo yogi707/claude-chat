@@ -1,4 +1,5 @@
 import { useState, type RefObject } from "react";
+import { ResizableBox } from "react-resizable";
 import ChatPanel from "../../components/ChatPanel";
 import ChatPreview from "../../components/ChatPreview";
 import { type Message } from "../../context/ChatContext";
@@ -24,17 +25,43 @@ function ChatConversation({
 
   return (
     <div className="flex flex-row bg-gray-100 h-screen">
-      <ChatPanel
-        chatId={chatId!}
-        onMessageSelect={(message, snippetIndex) => handleMessageSelect(message, snippetIndex)}
-        initialMessage={initialMessage}
-      />
-      {selectedMessage && (
-        <ChatPreview
-          selectedMessage={selectedMessage}
-          onClose={handleMessageClose}
-          initialSnippetIndex={selectedSnippetIndex}
-        />
+      {selectedMessage ? (
+        <>
+          {/* Resizable Chat Panel */}
+          <ResizableBox
+            width={600}
+            height={Infinity}
+            minConstraints={[300, Infinity]}
+            maxConstraints={[1000, Infinity]}
+            resizeHandles={['e']}
+            className="flex-shrink-0"
+          >
+            <div className="h-full">
+              <ChatPanel
+                chatId={chatId!}
+                onMessageSelect={(message, snippetIndex) => handleMessageSelect(message, snippetIndex)}
+                initialMessage={initialMessage}
+              />
+            </div>
+          </ResizableBox>
+          
+          {/* Chat Preview - takes remaining space */}
+          <div className="flex-1 min-w-0">
+            <ChatPreview
+              selectedMessage={selectedMessage}
+              onClose={handleMessageClose}
+              initialSnippetIndex={selectedSnippetIndex}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="flex-1">
+          <ChatPanel
+            chatId={chatId!}
+            onMessageSelect={(message, snippetIndex) => handleMessageSelect(message, snippetIndex)}
+            initialMessage={initialMessage}
+          />
+        </div>
       )}
     </div>
   );
