@@ -8,6 +8,12 @@ export interface Message {
   content: string;
   role: "user" | "assistant";
   timestamp: Date;
+  model?: string;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }
 
 export interface ChatPreviewProps {

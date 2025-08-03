@@ -1,12 +1,6 @@
 import { cn } from "../lib/utils";
 import ChatMessage from "./ChatMessage";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-}
+import type { Message } from "./ChatPreview";
 
 interface ChatDisplayProps {
   messages?: Message[];
@@ -54,6 +48,7 @@ function ChatDisplay({ messages = [], onMessageSelect }: ChatDisplayProps) {
             content={message.content}
             role={message.role}
             timestamp={message.timestamp}
+            isStreaming={message.isStreaming}
             onClick={() => onMessageSelect?.(message)}
           />
         ))
