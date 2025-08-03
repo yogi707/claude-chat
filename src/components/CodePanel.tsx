@@ -51,7 +51,7 @@ function CodePanel({
     const formattedJson = JSON.stringify(jsonData, null, 2);
 
     return (
-      <div className="h-full bg-gray-900">
+      <div className="h-full bg-gray-900 overflow-hidden">
         <Editor
           height="100%"
           defaultLanguage="json"
@@ -63,11 +63,17 @@ function CodePanel({
             fontSize: 14,
             lineNumbers: "on",
             folding: true,
-            wordWrap: "on",
+            wordWrap: "off",
             automaticLayout: true,
             scrollBeyondLastLine: false,
             renderWhitespace: "selection",
             bracketPairColorization: { enabled: true },
+            scrollbar: {
+              horizontal: "auto",
+              vertical: "auto",
+              horizontalScrollbarSize: 12,
+              verticalScrollbarSize: 12,
+            },
           }}
         />
       </div>
@@ -99,14 +105,14 @@ function CodePanel({
 
         {/* Snippet selector */}
         {codeSnippets.length > 1 && (
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
             {codeSnippets.map((snippet, index) => (
               <Button
                 key={snippet.id}
                 variant={index === selectedSnippetIndex ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedSnippetIndex(index)}
-                className="h-7 text-xs"
+                className="h-7 text-xs whitespace-nowrap flex-shrink-0"
               >
                 {snippet.language} ({snippet.content.split("\n").length} lines)
               </Button>
@@ -129,7 +135,7 @@ function CodePanel({
       </div>
 
       {/* Code editor */}
-      <div className="flex-1">
+      <div className="flex-1 overflow-hidden">
         <Editor
           height="100%"
           language={normalizedLanguage}
@@ -141,7 +147,7 @@ function CodePanel({
             fontSize: 14,
             lineNumbers: "on",
             folding: true,
-            wordWrap: "on",
+            wordWrap: "off",
             automaticLayout: true,
             scrollBeyondLastLine: false,
             renderWhitespace: "selection",
@@ -159,6 +165,12 @@ function CodePanel({
             },
             suggest: {
               showWords: false,
+            },
+            scrollbar: {
+              horizontal: "auto",
+              vertical: "auto",
+              horizontalScrollbarSize: 12,
+              verticalScrollbarSize: 12,
             },
           }}
         />
