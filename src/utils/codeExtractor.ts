@@ -6,7 +6,6 @@ import type { CodeSnippet } from "../context/ChatContext";
  * @returns Array of extracted code snippets
  */
 export function extractCodeSnippets(text: string): CodeSnippet[] {
-  console.log("Extracting code snippets from text:", text);
   if (!text) return [];
 
   const codeSnippets: CodeSnippet[] = [];
@@ -18,14 +17,14 @@ export function extractCodeSnippets(text: string): CodeSnippet[] {
 
   while ((match = codeBlockRegex.exec(text)) !== null) {
     const [, language = "", content] = match;
-    
+
     // Skip empty code blocks
     if (!content.trim()) continue;
 
     // Calculate line numbers for this code block
     const beforeMatch = text.substring(0, match.index);
-    const startLine = beforeMatch.split('\n').length;
-    const contentLines = content.split('\n').length;
+    const startLine = beforeMatch.split("\n").length;
+    const contentLines = content.split("\n").length;
     const endLine = startLine + contentLines - 1;
 
     const snippet: CodeSnippet = {
@@ -35,7 +34,7 @@ export function extractCodeSnippets(text: string): CodeSnippet[] {
       startLine,
       endLine,
     };
-    
+
     codeSnippets.push(snippet);
   }
 

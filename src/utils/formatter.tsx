@@ -16,8 +16,6 @@ export const formatResponse = (
 ): React.ReactNode => {
   if (!text) return null;
 
-  console.log("Formatting response text:", text);
-
   // First, extract and replace code blocks with placeholders
   const codeBlocks: Array<{
     language: string;
@@ -59,15 +57,11 @@ export const formatResponse = (
   let currentListType: string | null = null;
 
   lines.forEach((line, index) => {
-    console.log(`Processing line ${index + 1}:`, line);
-
     // Handle code block placeholders
     const codeBlockMatch = line.trim().match(/^__CODE_BLOCK_(\d+)__$/);
-    console.log(`Code block match for line ${index + 1}:`, codeBlockMatch);
     if (codeBlockMatch) {
       const blockIndex = parseInt(codeBlockMatch[1]);
       const codeBlock = codeBlocks[blockIndex];
-      console.log(`Found code block at index ${blockIndex}:`, codeBlock);
       const NOT_ALLOWED_LANGUAGES = ["bash", "shell", "sh", "powershell"];
 
       if (codeBlock) {

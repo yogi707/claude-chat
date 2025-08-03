@@ -41,6 +41,7 @@ type ChatAction =
   | { type: "CREATE_CHAT"; payload: { chatId: string; title: string } }
   | { type: "SET_CURRENT_CHAT"; payload: string }
   | { type: "ADD_MESSAGE"; payload: { chatId: string; message: Message } }
+  | { type: "ADD_CHAT"; payload: { chatId: string; messages: Message[] } }
   | {
       type: "UPDATE_MESSAGE";
       payload: { chatId: string; messageId: string; updates: Partial<Message> };
@@ -96,6 +97,20 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
       };
     }
 
+    case "ADD_CHAT": {
+      const { chatId, messages } = action.payload;
+      return {
+        ...state,
+        chats: {
+          ...state.chats,
+          [chatId]: {
+            messages: messages,
+            updatedAt: new Date(),
+          } as Chat,
+        },
+      };
+    }
+
     case "UPDATE_MESSAGE": {
       const { messageId, updates } = action.payload;
       const targetChat = state.chats[action.payload.chatId];
@@ -139,6 +154,7 @@ interface ChatContextType {
     createChat: (chatId: string, title: string) => void;
     setCurrentChat: (chatId: string) => void;
     addMessage: (chatId: string, message: Message) => void;
+    addChat: (chatId: string, messages: Message[]) => void;
     updateMessage: (
       chatId: string,
       messageId: string,
@@ -164,6 +180,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     },
     addMessage: (chatId: string, message: Message) => {
       dispatch({ type: "ADD_MESSAGE", payload: { chatId, message } });
+    },
+    addChat: (chatId: string, messages: Message[]) => {
+      dispatch({ type: "ADD_CHAT", payload: { chatId, messages } });
     },
     updateMessage: (
       chatId: string,
