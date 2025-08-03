@@ -7,6 +7,7 @@ import {
 import ChatModule from "./views/chats";
 import NewChatScreen from "./components/NewChatScreen";
 import NotFound from "./components/NotFound";
+import ChatLayout from "./components/ChatLayout";
 import { ChatProvider } from "./context/ChatContext";
 
 function App() {
@@ -15,8 +16,22 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Navigate to="/chat/new" replace />} />
-          <Route path="/chat/new" element={<NewChatScreen />} />
-          <Route path="/chat/:chatId" element={<ChatModule />} />
+          <Route 
+            path="/chat/new" 
+            element={
+              <ChatLayout>
+                <NewChatScreen />
+              </ChatLayout>
+            } 
+          />
+          <Route 
+            path="/chat/:chatId" 
+            element={
+              <ChatLayout>
+                <ChatModule />
+              </ChatLayout>
+            } 
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
