@@ -2,19 +2,7 @@ import { useState } from "react";
 import PreviewPanel from "./PreviewPanel";
 import CodePanel from "./CodePanel";
 import PreviewHeader from "./PreviewHeader";
-
-export interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-  model?: string;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
+import type { Message } from "../context/ChatContext";
 
 export interface ChatPreviewProps {
   selectedMessage: Message;

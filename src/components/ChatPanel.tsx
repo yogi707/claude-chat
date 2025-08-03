@@ -1,23 +1,12 @@
-import { useState } from "react";
+import { useEffect, type RefObject } from "react";
 import ChatDisplay from "./ChatDisplay";
 import ChatInput from "./ChatInput";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  timestamp: Date;
-  model?: string;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-  isStreaming?: boolean;
-}
+import { useChatContext, type Message } from "../context/ChatContext";
 
 interface ChatPanelProps {
+  chatId: string;
   onMessageSelect?: (message: Message) => void;
+  initialMessage?: RefObject<string>;
 }
 
 interface StreamChunk {
@@ -32,9 +21,24 @@ interface StreamChunk {
   };
 }
 
-function ChatPanel({ onMessageSelect }: ChatPanelProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
+function ChatPanel({
+  chatId,
+  onMessageSelect,
+  initialMessage,
+}: ChatPanelProps) {
+  const { state, actions } = useChatContext();
+  const currentChat = actions.getCurrentChat();
+  const messages = currentChat?.messages || [];
+  const isStreaming = state.isStreaming;
+
+  // Handle initial message from new chat screen
+  useEffect(() => {
+    if (initialMessage?.current && messages.length === 0) {
+      const messageToSend = initialMessage.current;
+      initialMessage.current = ""; // Clear immediately to prevent re-sending
+      handleSendMessage(messageToSend);
+    }
+  }, [initialMessage, messages.length]);
 
   const handleStreamingResponse = async (query: string) => {
     const response = await fetch("http://localhost:8000/api/v1/query/stream", {
@@ -46,7 +50,7 @@ function ChatPanel({ onMessageSelect }: ChatPanelProps) {
       },
       body: JSON.stringify({
         query,
-        conversation_id: "550e8400-e29b-41d4-a716-446655440000",
+        conversation_id: chatId,
       }),
     });
 
@@ -71,11 +75,11 @@ function ChatPanel({ onMessageSelect }: ChatPanelProps) {
       isStreaming: true,
     };
 
-    setMessages((prev) => [...prev, initialAssistantMessage]);
+    actions.addMessage(chatId, initialAssistantMessage);
 
     let accumulatedContent = "";
     let modelInfo = "";
-    let finalUsage: any = undefined;
+    let finalUsage = undefined;
 
     try {
       while (true) {
@@ -121,19 +125,12 @@ function ChatPanel({ onMessageSelect }: ChatPanelProps) {
             }
 
             // Update the message content in real-time
-            setMessages((prev) =>
-              prev.map((msg) =>
-                msg.id === assistantMessageId
-                  ? {
-                      ...msg,
-                      content: accumulatedContent,
-                      model: modelInfo,
-                      ...(finalUsage && { usage: finalUsage }),
-                      isStreaming: !data.done, // Stop streaming when done
-                    }
-                  : msg
-              )
-            );
+            actions.updateMessage(chatId, assistantMessageId, {
+              content: accumulatedContent,
+              model: modelInfo,
+              ...(finalUsage && { usage: finalUsage }),
+              isStreaming: !data.done, // Stop streaming when done
+            });
 
             // If this is the final chunk, we can break
             if (data.done) {
@@ -157,8 +154,8 @@ function ChatPanel({ onMessageSelect }: ChatPanelProps) {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setIsStreaming(true);
+    actions.addMessage(chatId, userMessage);
+    actions.setStreaming(true);
 
     try {
       await handleStreamingResponse(content);
@@ -173,9 +170,9 @@ function ChatPanel({ onMessageSelect }: ChatPanelProps) {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, errorMessage]);
+      actions.addMessage(chatId, errorMessage);
     } finally {
-      setIsStreaming(false);
+      actions.setStreaming(false);
     }
   };
 

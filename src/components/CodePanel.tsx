@@ -1,5 +1,5 @@
 import Editor from "@monaco-editor/react";
-import type { Message } from "./ChatPreview";
+import type { Message } from "../context/ChatContext";
 
 function CodePanel({ selectedMessage }: { selectedMessage: Message }) {
   // Prepare the JSON data for the Monaco Editor

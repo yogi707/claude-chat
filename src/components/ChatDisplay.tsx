@@ -1,6 +1,6 @@
 import { cn } from "../lib/utils";
 import ChatMessage from "./ChatMessage";
-import type { Message } from "./ChatPreview";
+import type { Message } from "../context/ChatContext";
 
 interface ChatDisplayProps {
   messages?: Message[];

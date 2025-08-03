@@ -1,5 +1,16 @@
+import React from "react";
+
+// Copy code to clipboard helper
+const copyCodeToClipboard = async (code: string) => {
+  try {
+    await navigator.clipboard.writeText(code);
+  } catch (err) {
+    console.warn('Failed to copy code to clipboard:', err);
+  }
+};
+
 // Format markdown-like text to JSX elements
-export const formatResponse = (text) => {
+export const formatResponse = (text: string): React.ReactNode => {
   if (!text) return null;
 
   const lines = text.split("\n");
@@ -141,7 +152,7 @@ export const formatResponse = (text) => {
 };
 
 // Format inline text (bold, italic, code)
-export const formatInlineText = (text) => {
+export const formatInlineText = (text: string): React.ReactNode => {
   const parts = [];
   let currentText = text;
   let key = 0;
