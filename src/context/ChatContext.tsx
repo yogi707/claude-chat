@@ -1,5 +1,13 @@
 import { createContext, useContext, useReducer, type ReactNode } from "react";
 
+export interface CodeSnippet {
+  id: string;
+  language: string;
+  content: string;
+  startLine?: number;
+  endLine?: number;
+}
+
 export interface Message {
   id: string;
   content: string;
@@ -12,6 +20,7 @@ export interface Message {
     total_tokens: number;
   };
   isStreaming?: boolean;
+  codeSnippets?: CodeSnippet[];
 }
 
 export interface Chat {

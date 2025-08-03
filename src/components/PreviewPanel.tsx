@@ -1,4 +1,4 @@
-import type { Message } from "./ChatPreview";
+import type { Message } from "../context/ChatContext";
 
 function PreviewPanel({ selectedMessage }: { selectedMessage: Message }) {
   return (

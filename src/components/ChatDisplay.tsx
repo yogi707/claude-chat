@@ -4,10 +4,10 @@ import type { Message } from "../context/ChatContext";
 
 interface ChatDisplayProps {
   messages?: Message[];
-  onMessageSelect?: (message: Message) => void;
+  onViewArtifact?: (message: Message, snippetIndex: number) => void;
 }
 
-function ChatDisplay({ messages = [], onMessageSelect }: ChatDisplayProps) {
+function ChatDisplay({ messages = [], onViewArtifact }: ChatDisplayProps) {
   // Mock messages for demo
   const demoMessages: Message[] = [
     {
@@ -49,7 +49,7 @@ function ChatDisplay({ messages = [], onMessageSelect }: ChatDisplayProps) {
             role={message.role}
             timestamp={message.timestamp}
             isStreaming={message.isStreaming}
-            onClick={() => onMessageSelect?.(message)}
+            onViewArtifact={(snippetIndex) => onViewArtifact?.(message, snippetIndex)}
           />
         ))
       )}

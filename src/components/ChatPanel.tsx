@@ -2,10 +2,11 @@ import { useEffect, type RefObject } from "react";
 import ChatDisplay from "./ChatDisplay";
 import ChatInput from "./ChatInput";
 import { useChatContext, type Message } from "../context/ChatContext";
+import { extractCodeSnippets } from "../utils/codeExtractor";
 
 interface ChatPanelProps {
   chatId: string;
-  onMessageSelect?: (message: Message) => void;
+  onMessageSelect?: (message: Message, snippetIndex?: number) => void;
   initialMessage?: RefObject<string>;
 }
 
@@ -124,12 +125,16 @@ function ChatPanel({
               finalUsage = data.usage;
             }
 
+            // Extract code snippets from accumulated content
+            const codeSnippets = extractCodeSnippets(accumulatedContent);
+            
             // Update the message content in real-time
             actions.updateMessage(chatId, assistantMessageId, {
               content: accumulatedContent,
               model: modelInfo,
               ...(finalUsage && { usage: finalUsage }),
               isStreaming: !data.done, // Stop streaming when done
+              codeSnippets: codeSnippets.length > 0 ? codeSnippets : undefined,
             });
 
             // If this is the final chunk, we can break
@@ -179,7 +184,10 @@ function ChatPanel({
   return (
     <div className="flex-1 flex flex-col h-full bg-gray-50">
       <div className="flex-1 flex flex-col min-h-0">
-        <ChatDisplay messages={messages} onMessageSelect={onMessageSelect} />
+        <ChatDisplay 
+          messages={messages} 
+          onViewArtifact={(message, snippetIndex) => onMessageSelect?.(message, snippetIndex)}
+        />
         <ChatInput
           onSendMessage={handleSendMessage}
           disabled={isStreaming}

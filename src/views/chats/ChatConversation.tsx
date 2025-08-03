@@ -11,8 +11,11 @@ function ChatConversation({
   initialMessage?: RefObject<string>;
 }) {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const handleMessageSelect = (message: Message) => {
+  const [selectedSnippetIndex, setSelectedSnippetIndex] = useState<number>(0);
+  
+  const handleMessageSelect = (message: Message, snippetIndex?: number) => {
     setSelectedMessage(message);
+    setSelectedSnippetIndex(snippetIndex || 0);
   };
 
   const handleMessageClose = () => {
@@ -23,13 +26,14 @@ function ChatConversation({
     <div className="flex flex-row bg-gray-100 h-screen">
       <ChatPanel
         chatId={chatId!}
-        onMessageSelect={handleMessageSelect}
+        onMessageSelect={(message, snippetIndex) => handleMessageSelect(message, snippetIndex)}
         initialMessage={initialMessage}
       />
       {selectedMessage && (
         <ChatPreview
           selectedMessage={selectedMessage}
           onClose={handleMessageClose}
+          initialSnippetIndex={selectedSnippetIndex}
         />
       )}
     </div>

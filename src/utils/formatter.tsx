@@ -10,16 +10,20 @@ const copyCodeToClipboard = async (code: string) => {
 };
 
 // Format markdown-like text to JSX elements
-export const formatResponse = (text: string): React.ReactNode => {
+export const formatResponse = (
+  text: string, 
+  onViewArtifact?: (snippetIndex: number) => void
+): React.ReactNode => {
   if (!text) return null;
 
   const lines = text.split("\n");
-  const elements = [];
-  let currentList = [];
-  let currentListType = null;
+  const elements: React.ReactNode[] = [];
+  let currentList: React.ReactNode[] = [];
+  let currentListType: string | null = null;
   let inCodeBlock = false;
-  let codeContent = [];
+  let codeContent: string[] = [];
   let codeLanguage = "";
+  let snippetIndex = 0;
 
   lines.forEach((line, index) => {
     // Handle code blocks
@@ -30,25 +34,58 @@ export const formatResponse = (text: string): React.ReactNode => {
         codeContent = [];
       } else {
         inCodeBlock = false;
-        elements.push(
-          <div
-            key={`code-${index}`}
-            className="my-4 border border-gray-200 rounded-lg overflow-hidden"
-          >
-            <div className="bg-gray-100 px-4 py-2 flex justify-between items-center text-sm">
-              <span className="text-gray-600">{codeLanguage || "text"}</span>
-              <button
-                onClick={() => copyCodeToClipboard(codeContent.join("\n"))}
-                className="text-gray-500 hover:text-gray-700"
+        
+        // Create code snippet if we have content
+        if (codeContent.length > 0) {
+          const currentSnippetIndex = snippetIndex++;
+          
+          if (onViewArtifact) {
+            // Show "View Artifacts" button placeholder
+            elements.push(
+              <div
+                key={`code-${index}`}
+                className="my-4 border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
               >
-                Copy
-              </button>
-            </div>
-            <pre className="bg-gray-900 text-green-400 p-4 overflow-x-auto">
-              <code>{codeContent.join("\n")}</code>
-            </pre>
-          </div>
-        );
+                <div className="p-4 text-center">
+                  <div className="text-sm text-gray-600 mb-3">
+                    <span className="font-medium">{codeLanguage || "Code"}</span>
+                    <span className="text-gray-400"> • {codeContent.length} lines</span>
+                  </div>
+                  <button
+                    onClick={() => onViewArtifact(currentSnippetIndex)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    View Artifacts
+                  </button>
+                </div>
+              </div>
+            );
+          } else {
+            // Fallback to original code block rendering
+            elements.push(
+              <div
+                key={`code-${index}`}
+                className="my-4 border border-gray-200 rounded-lg overflow-hidden"
+              >
+                <div className="bg-gray-100 px-4 py-2 flex justify-between items-center text-sm">
+                  <span className="text-gray-600">{codeLanguage || "text"}</span>
+                  <button
+                    onClick={() => copyCodeToClipboard(codeContent.join("\n"))}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre className="bg-gray-900 text-green-400 p-4 overflow-x-auto">
+                  <code>{codeContent.join("\n")}</code>
+                </pre>
+              </div>
+            );
+          }
+        }
       }
       return;
     }
@@ -153,22 +190,22 @@ export const formatResponse = (text: string): React.ReactNode => {
 
 // Format inline text (bold, italic, code)
 export const formatInlineText = (text: string): React.ReactNode => {
-  const parts = [];
+  const parts: React.ReactNode[] = [];
   let currentText = text;
   let key = 0;
 
   // Handle inline code first
-  currentText = currentText.replace(/`([^`]+)`/g, (match, code) => {
+  currentText = currentText.replace(/`([^`]+)`/g, (_match, code) => {
     return `__INLINE_CODE_${key++}__${code}__INLINE_CODE_END__`;
   });
 
   // Handle bold text
-  currentText = currentText.replace(/\*\*(.*?)\*\*/g, (match, bold) => {
+  currentText = currentText.replace(/\*\*(.*?)\*\*/g, (_match, bold) => {
     return `__BOLD_${key++}__${bold}__BOLD_END__`;
   });
 
   // Handle italic text
-  currentText = currentText.replace(/\*(.*?)\*/g, (match, italic) => {
+  currentText = currentText.replace(/\*(.*?)\*/g, (_match, italic) => {
     return `__ITALIC_${key++}__${italic}__ITALIC_END__`;
   });
 

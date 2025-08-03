@@ -5,16 +5,16 @@ interface ChatMessageProps {
   content: string;
   role: "user" | "assistant";
   timestamp: Date;
-  onClick?: () => void;
   isStreaming?: boolean;
+  onViewArtifact?: (snippetIndex: number) => void;
 }
 
 function ChatMessage({
   content,
   role,
   timestamp,
-  onClick,
   isStreaming,
+  onViewArtifact,
 }: ChatMessageProps) {
   const isUser = role === "user";
   const isEmpty = content.trim() === "";
@@ -26,12 +26,11 @@ function ChatMessage({
     >
       <div
         className={cn(
-          "max-w-[70%] rounded-lg px-4 py-2 shadow-sm cursor-pointer hover:shadow-md transition-shadow",
+          "max-w-[70%] rounded-lg px-4 py-2 shadow-sm",
           isUser
-            ? "bg-blue-500 text-white hover:bg-blue-600"
-            : "bg-gray-100 text-gray-900 hover:bg-gray-200"
+            ? "bg-blue-500 text-white"
+            : "bg-gray-100 text-gray-900"
         )}
-        onClick={onClick}
       >
         {showLoadingIndicator ? (
           <div className="flex items-center gap-2">
@@ -67,20 +66,24 @@ function ChatMessage({
             </span>
           </div>
         ) : (
-          <p className="text-sm leading-relaxed">{formatResponse(content)}</p>
+          <div className="text-sm leading-relaxed">
+            {formatResponse(content, onViewArtifact)}
+          </div>
         )}
 
-        <p
-          className={cn(
-            "text-xs mt-1 opacity-70",
-            isUser ? "text-blue-100" : "text-gray-500"
-          )}
-        >
-          {timestamp.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-        </p>
+        <div className="flex items-center justify-between mt-2">
+          <p
+            className={cn(
+              "text-xs opacity-70",
+              isUser ? "text-blue-100" : "text-gray-500"
+            )}
+          >
+            {timestamp.toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+        </div>
       </div>
     </div>
   );
