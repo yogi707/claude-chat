@@ -9,52 +9,35 @@ export function extractCodeSnippets(text: string): CodeSnippet[] {
   console.log("Extracting code snippets from text:", text);
   if (!text) return [];
 
-  const lines = text.split("\n");
   const codeSnippets: CodeSnippet[] = [];
-
-  let inCodeBlock = false;
-  let codeContent: string[] = [];
-  let codeLanguage = "";
-  let startLine = 0;
   let snippetCounter = 0;
 
-  lines.forEach((line, index) => {
-    // Handle code blocks
-    if (line.startsWith("```")) {
-      if (!inCodeBlock) {
-        // Starting a code block
-        inCodeBlock = true;
-        codeLanguage = line.replace("```", "").trim();
-        codeContent = [];
-        startLine = index + 1; // Start after the opening fence
-      } else {
-        // Ending a code block
-        inCodeBlock = false;
+  // Use regex to find all code blocks, including those not starting at line beginning
+  const codeBlockRegex = /```([\w]*)?\n?([\s\S]*?)```/g;
+  let match;
 
-        // Create code snippet if we have content
-        if (codeContent.length > 0) {
-          const snippet: CodeSnippet = {
-            id: `snippet_${Date.now()}_${snippetCounter++}`,
-            language: codeLanguage || "text",
-            content: codeContent.join("\n"),
-            startLine,
-            endLine: index - 1, // End before the closing fence
-          };
-          codeSnippets.push(snippet);
-        }
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    const [, language = "", content] = match;
+    
+    // Skip empty code blocks
+    if (!content.trim()) continue;
 
-        // Reset for next code block
-        codeContent = [];
-        codeLanguage = "";
-      }
-      return;
-    }
+    // Calculate line numbers for this code block
+    const beforeMatch = text.substring(0, match.index);
+    const startLine = beforeMatch.split('\n').length;
+    const contentLines = content.split('\n').length;
+    const endLine = startLine + contentLines - 1;
 
-    // Collect code content when inside a code block
-    if (inCodeBlock) {
-      codeContent.push(line);
-    }
-  });
+    const snippet: CodeSnippet = {
+      id: `snippet_${Date.now()}_${snippetCounter++}`,
+      language: language.trim() || "text",
+      content: content.trim(),
+      startLine,
+      endLine,
+    };
+    
+    codeSnippets.push(snippet);
+  }
 
   return codeSnippets;
 }

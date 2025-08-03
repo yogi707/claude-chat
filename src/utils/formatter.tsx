@@ -16,103 +16,129 @@ export const formatResponse = (
 ): React.ReactNode => {
   if (!text) return null;
 
-  const lines = text.split("\n");
+  console.log("Formatting response text:", text);
+
+  // First, extract and replace code blocks with placeholders
+  const codeBlocks: Array<{
+    language: string;
+    content: string;
+    lines: number;
+  }> = [];
+  let processedText = text;
+
+  // Find all code blocks using regex (handles ``` anywhere in line)
+  const codeBlockRegex = /```([\w]*)?\n?([\s\S]*?)```/g;
+  let match;
+  let snippetIndex = 0;
+
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    const [fullMatch, language = "", content] = match;
+
+    if (content.trim()) {
+      codeBlocks.push({
+        language: language.trim() || "text",
+        content: content.trim(),
+        lines: content.trim().split("\n").length,
+      });
+
+      // Replace the code block with a placeholder
+      processedText = processedText.replace(
+        fullMatch,
+        `__CODE_BLOCK_${snippetIndex++}__`
+      );
+    } else {
+      // Remove empty code blocks
+      processedText = processedText.replace(fullMatch, "");
+    }
+  }
+
+  // Now process the text line by line, handling code block placeholders
+  const lines = processedText.split("\n");
   const elements: React.ReactNode[] = [];
   let currentList: React.ReactNode[] = [];
   let currentListType: string | null = null;
-  let inCodeBlock = false;
-  let codeContent: string[] = [];
-  let codeLanguage = "";
-  let snippetIndex = 0;
-  console.log("Formatting response text:", text);
 
   lines.forEach((line, index) => {
     console.log(`Processing line ${index + 1}:`, line);
-    // Handle code blocks
-    if (line.startsWith("```")) {
-      if (!inCodeBlock) {
-        inCodeBlock = true;
-        codeLanguage = line.replace("```", "").trim();
-        console.log(codeLanguage);
-        codeContent = [];
-      } else {
-        inCodeBlock = false;
 
-        console.log("Ending code block:", codeLanguage, codeContent);
-        // Create code snippet if we have content
-        if (codeContent.length > 0) {
-          const currentSnippetIndex = snippetIndex++;
+    // Handle code block placeholders
+    const codeBlockMatch = line.trim().match(/^__CODE_BLOCK_(\d+)__$/);
+    console.log(`Code block match for line ${index + 1}:`, codeBlockMatch);
+    if (codeBlockMatch) {
+      const blockIndex = parseInt(codeBlockMatch[1]);
+      const codeBlock = codeBlocks[blockIndex];
+      console.log(`Found code block at index ${blockIndex}:`, codeBlock);
+      const NOT_ALLOWED_LANGUAGES = ["bash", "shell", "sh", "powershell"];
 
-          if (onViewArtifact) {
-            // Show "View Artifacts" button placeholder
-            elements.push(
-              <div
-                key={`code-${index}`}
-                className="my-4 border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
-              >
-                <div className="p-4 text-center">
-                  <div className="text-sm text-gray-600 mb-3">
-                    <span className="font-medium">
-                      {codeLanguage || "Code"}
-                    </span>
-                    <span className="text-gray-400">
-                      {" "}
-                      • {codeContent.length} lines
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => onViewArtifact(currentSnippetIndex)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-                      />
-                    </svg>
-                    View Artifacts
-                  </button>
-                </div>
-              </div>
-            );
-          } else {
-            // Fallback to original code block rendering
-            elements.push(
-              <div
-                key={`code-${index}`}
-                className="my-4 border border-gray-200 rounded-lg overflow-hidden"
-              >
-                <div className="bg-gray-100 px-4 py-2 flex justify-between items-center text-sm">
-                  <span className="text-gray-600">
-                    {codeLanguage || "text"}
+      if (codeBlock) {
+        if (
+          onViewArtifact &&
+          codeBlock.language &&
+          !NOT_ALLOWED_LANGUAGES.includes(codeBlock.language)
+        ) {
+          // Show "View Artifacts" button placeholder
+          elements.push(
+            <div
+              key={`code-${index}`}
+              className="my-4 border border-gray-200 rounded-lg overflow-hidden bg-gray-50"
+            >
+              <div className="p-4 text-center">
+                <div className="text-sm text-gray-600 mb-3">
+                  <span className="font-medium">
+                    {codeBlock.language || "Code"}
                   </span>
-                  <button
-                    onClick={() => copyCodeToClipboard(codeContent.join("\n"))}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    Copy
-                  </button>
+                  <span className="text-gray-400">
+                    {" "}
+                    • {codeBlock.lines} lines
+                  </span>
                 </div>
-                <pre className="bg-gray-900 text-green-400 p-4 overflow-x-auto">
-                  <code>{codeContent.join("\n")}</code>
-                </pre>
+                <button
+                  onClick={() => onViewArtifact(blockIndex)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+                >
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                    />
+                  </svg>
+                  View Artifacts
+                </button>
               </div>
-            );
-          }
+            </div>
+          );
+        } else {
+          // Fallback to original code block rendering
+          elements.push(
+            <div
+              key={`code-${index}`}
+              className="my-4 border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <div className="bg-gray-100 px-4 py-2 flex justify-between items-center text-sm">
+                <span className="text-gray-600">
+                  {codeBlock.language || "text"}
+                </span>
+                <button
+                  onClick={() => copyCodeToClipboard(codeBlock.content)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Copy
+                </button>
+              </div>
+              <pre className="bg-gray-900 text-green-400 p-4 overflow-x-auto">
+                <code>{codeBlock.content}</code>
+              </pre>
+            </div>
+          );
         }
       }
-      return;
-    }
-
-    if (inCodeBlock) {
-      codeContent.push(line);
       return;
     }
 
